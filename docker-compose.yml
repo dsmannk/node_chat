@@ -1,0 +1,30 @@
+# docker-compose.yml
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: node_chat_dev:latest
+    container_name: node_chat_dev
+    working_dir: /app
+    # 호스트 소스 마운트 + node_modules는 컨테이너 볼륨 사용
+    volumes:
+      - .:/app:delegated
+      - app_node_modules:/app/node_modules
+      - ./docker/node/.npmrc:/home/node/.npmrc:ro
+    ports:
+      - "3000:3000"
+      - "5173:5173"
+    environment:
+      # 윈도우/WSL에서 파일감시 강화
+      #- CHOKIDAR_USEPOLLING=true
+      #- WATCHPACK_POLLING=true
+      - WSL2=true # Docker Desktop에서 WSL2 백엔진 사용 권장 (소스 디렉토리는 **WSL2 파일시스템(예: \wsl$…)**에 두면 I/O가 훨씬 빠름)
+      # 타임존/로케일(선택
+      - TZ=Asia/Seoul
+    # 루트가 아닌 node 유저로 실행
+    user: "1000:1000"
+    command: ["npm", "run", "dev"]
+
+volumes:
+  app_node_modules:

@@ -1,0 +1,26 @@
+# Dockerfile.dev
+FROM node: 22-alpine
+
+# 작업 디렉토리
+WORKDIR /app
+
+# 성능/안정 옵션
+ENV CI=true \
+    npm_config_fund=false \
+    npm_config_audit=false
+
+# (선택) 최신 npm 보장 - EBADENGINE 피하려고 컨테이너 내부에서만 최신 유지
+RUN npm i -g npm@latest && npm -v
+
+# 의존성 설치 캐시 최적화
+COPY package*.json ./
+# 필요하면 : COPY pnpm-lock.yaml ./ (pnpm 쓸 경우)
+RUN npm ci || npm install
+
+# 일반 유저로 전환 (보안/권한 이슈 예방)
+USER node
+
+# 소스는 볼륨 마운트로 들어올 예정(compose에서)
+# 프레임워크별 기본 포트(Vite: 5173, Next.js / Express: 3000)
+EXPOSE 3000 5173
+CMD ["npm", "run", "dev"]
