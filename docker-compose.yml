@@ -22,6 +22,7 @@ services:
       - WSL2=true # Docker Desktop에서 WSL2 백엔진 사용 권장 (소스 디렉토리는 **WSL2 파일시스템(예: \wsl$…)**에 두면 I/O가 훨씬 빠름)
       # 타임존/로케일(선택
       - TZ=Asia/Seoul
+      - PORT=3000
     # 루트가 아닌 node 유저로 실행
     user: "1000:1000"
     command: ["npm", "run", "dev"]
