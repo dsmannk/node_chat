@@ -23,90 +23,67 @@ USER node
 # ---------------------------
 # Express 준비 (chapter3/express-server)
 # ---------------------------
-RUN <<'SCRIPT'
-set -eux
-mkdir -p /app/chapter3/express-server
-cd /app/chapter3/express-server
-
-[ -f package.json ] || npm init -y
-npm pkg set name="express-server" --silent
-npm pkg set type="module" --silent
-npm install express@latest --no-audit --no-fund
-
-if [ ! -f server.js ]; then
-cat > server.js <<'EOF'
-import express from 'express';
-const app = express();
-const PORT = process.env.PORT || 3000;
-app.get('/', (req, res) => res.send('Hello from Express!'));
-app.listen(PORT, () => console.log('[Express] listening on', PORT));
-EOF
-fi
-SCRIPT
+RUN mkdir -p /app/chapter3/express-server && \
+    cd /app/chapter3/express-server && \
+    [ -f package.json ] || npm init -y && \
+    npm pkg set name="express-server" --silent && \
+    npm pkg set type="module" --silent && \
+    npm install express@latest --no-audit --no-fund && \
+    [ -f server.js ] || printf "%s\n" \
+      "import express from 'express';" \
+      "const app = express();" \
+      "const PORT = process.env.PORT || 3000;" \
+      "app.get('/', (req, res) => res.send('Hello from Express!'));" \
+      "app.listen(PORT, () => console.log('[Express] listening on', PORT));" \
+      > server.js
 
 # ---------------------------
 # Nest.js 준비 (chapter8/hello-nestjs)
 # ---------------------------
-RUN <<'SCRIPT'
-set -eux
-mkdir -p /app/chapter8/hello-nestjs/src
-cd /app/chapter8/hello-nestjs
-
-[ -f package.json ] || npm init -y
-npm pkg set name="hello-nestjs" --silent
-
-# Nest 최소 패키지 + TS + ts-node(개발용)
-npm install @nestjs/core @nestjs/common @nestjs/platform-express reflect-metadata typescript --no-audit --no-fund
-npm install -D ts-node --no-audit --no-fund
-
-# 기본 main.ts
-if [ ! -f src/main.ts ]; then
-cat > src/main.ts <<'EOF'
-import 'reflect-metadata';
-import { NestFactory } from '@nestjs/core';
-import { Module, Controller, Get } from '@nestjs/common';
-
-@Controller()
-class AppController {
-  @Get()
-  getRoot(): string {
-    return 'Hello from NestJS!';
-  }
-}
-
-@Module({ controllers: [AppController] })
-class AppModule {}
-
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  const PORT = process.env.PORT || 3001;
-  await app.listen(PORT);
-  console.log(`[NestJS] listening on ${PORT}`);
-}
-bootstrap();
-EOF
-fi
-
-# tsconfig.json
-if [ ! -f tsconfig.json ]; then
-cat > tsconfig.json <<'EOF'
-{
-  "compilerOptions": {
-    "module": "esnext",
-    "target": "es2017",
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "outDir": "dist",
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "strict": true,
-    "skipLibCheck": true
-  },
-  "include": ["src/**/*"]
-}
-EOF
-fi
-SCRIPT
+RUN mkdir -p /app/chapter8/hello-nestjs/src && \
+    cd /app/chapter8/hello-nestjs && \
+    [ -f package.json ] || npm init -y && \
+    npm pkg set name="hello-nestjs" --silent && \
+    npm install @nestjs/core @nestjs/common @nestjs/platform-express reflect-metadata typescript --no-audit --no-fund && \
+    npm install -D ts-node --no-audit --no-fund && \
+    [ -f src/main.ts ] || printf "%s\n" \
+      "import 'reflect-metadata';" \
+      "import { NestFactory } from '@nestjs/core';" \
+      "import { Module, Controller, Get } from '@nestjs/common';" \
+      "" \
+      "@Controller()" \
+      "class AppController {" \
+      "  @Get()" \
+      "  getRoot(): string { return 'Hello from NestJS!'; }" \
+      "}" \
+      "" \
+      "@Module({ controllers: [AppController] })" \
+      "class AppModule {}" \
+      "" \
+      "async function bootstrap() {" \
+      "  const app = await NestFactory.create(AppModule);" \
+      "  const PORT = process.env.PORT || 3001;" \
+      "  await app.listen(PORT);" \
+      "  console.log(\`[NestJS] listening on \${PORT}\`);" \
+      "}" \
+      "bootstrap();" \
+      > src/main.ts && \
+    [ -f tsconfig.json ] || printf "%s\n" \
+      "{" \
+      '  "compilerOptions": {' \
+      '    "module": "esnext",' \
+      '    "target": "es2017",' \
+      '    "moduleResolution": "node",' \
+      '    "sourceMap": true,' \
+      '    "outDir": "dist",' \
+      '    "experimentalDecorators": true,' \
+      '    "emitDecoratorMetadata": true,' \
+      '    "strict": true,' \
+      '    "skipLibCheck": true' \
+      "  }," \
+      '  "include": ["src/**/*"]' \
+      "}" \
+      > tsconfig.json
 
 # (선택) 나머지 소스 복사
 COPY --chown=node:node . .

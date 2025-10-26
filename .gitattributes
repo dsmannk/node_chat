@@ -1,0 +1,6 @@
+# 항상 LF로 강제
+*           text=auto eol=lf
+Dockerfile* text eol=lf
+*.sh        text eol=lf
+*.js        text eol=lf
+*.ts        text eol=lf
