@@ -4,9 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node chapter3/code3-5-refactoring-router.js",
-    "start": "node server.js"
+    "dev": "node chapter3/express-server/board.js",
+    "dev:express": "node chapter3/express-server/server.js",
+    "dev:nest": "npx ts-node chapter8/hello-nestjs/src/main.ts",
+    "dev:both": "concurrently -n EXPRESS,NEST -c auto \"npm run dev:express\" \"npm run dev:nest\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
   },
   "repository": {
     "type": "git",
