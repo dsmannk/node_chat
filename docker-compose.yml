@@ -29,15 +29,13 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-      - root_modules:/app/node_modules
       - express_modules:/app/chapter3/express-server/node_modules
-      - nest_modules:/app/chapter3/nest-server/node_modules
+      - nest_modules:/app/chapter8/hello-nestjs/node_modules
       - ./docker/node/.npmrc:/home/node/.npmrc:ro
     ports:
       - "3000:3000"
       - "3001:3001"
     environment:
-      - MONGODB_URI='${MONGODB_URI}'
       # 윈도우/WSL에서 파일감시 강화
       #- CHOKIDAR_USEPOLLING=true
       #- WATCHPACK_POLLING=true
@@ -55,6 +53,5 @@ services:
 
 volumes:
   mongo_data:
-  root_modules:
   express_modules:
   nest_modules:
