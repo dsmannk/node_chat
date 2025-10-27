@@ -28,6 +28,7 @@ services:
     # 호스트 소스 마운트 + node_modules는 컨테이너 볼륨 사용
     volumes:
       - .:/app
+      - /app/node_modules
       - root_modules:/app/node_modules
       - express_modules:/app/chapter3/express-server/node_modules
       - nest_modules:/app/chapter3/nest-server/node_modules

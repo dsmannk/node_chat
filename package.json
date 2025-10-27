@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "node chapter3/express-server/board.js",
+    "dev": "node chapter6/test-mongoose/mongoose-crud.js",
     "dev:express": "node chapter3/express-server/server.js",
     "dev:nest": "npx ts-node chapter8/hello-nestjs/src/main.ts",
     "dev:both": "concurrently -n EXPRESS,NEST -c auto \"npm run dev:express\" \"npm run dev:nest\"",

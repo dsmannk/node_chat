@@ -85,8 +85,31 @@ RUN mkdir -p /app/chapter8/hello-nestjs/src && \
       "}" \
       > tsconfig.json
 
+# ------------------------------------
+# Mongoose CRUD 준비 (chapter6/test-mongoose)
+#  - express/mongoose/dotenv/body-parser 사전 설치
+#  - 파일이 없으면 최소 package.json만 생성
+# ------------------------------------
+RUN mkdir -p /app/chapter6/test-mongoose && \
+    cd /app/chapter6/test-mongoose && \
+    [ -f package.json ] || (npm init -y && npm pkg set type="module" --silent && npm pkg set name="test-mongoose" --silent) && \
+    npm install express mongoose dotenv body-parser --no-audit --no-fund
+
+
 # (선택) 나머지 소스 복사
 COPY --chown=node:node . .
+
+# ------------------------------------
+# COPY 이후 실제 프로젝트 기준으로 종속성 동기화
+#  - lockfile이 있으면 npm ci, 없으면 npm install
+# ------------------------------------
+# chapter6/test-mongoose
+RUN cd /app/chapter6/test-mongoose && \
+    if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi
+
+# (필요하다면 chapter3/express-server, chapter8/hello-nestjs 도 동일 패턴으로 보강 가능)
+# RUN cd /app/chapter3/express-server && if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi
+# RUN cd /app/chapter8/hello-nestjs && if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi
 
 # 포트 노출 (Express 3000, Nest 3001)
 EXPOSE 3000 3001
