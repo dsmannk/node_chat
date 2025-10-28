@@ -1,0 +1,7 @@
+{
+  "watch": ["chapter7/board", "configs", "views"],
+  "ext": "js,handlebars,hbs,json",
+  "ignore": ["node_modules", ".git"],
+  "exec": "node chapter7/board/app.js",
+  "signal": "SIGTERM"
+}

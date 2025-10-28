@@ -20,22 +20,36 @@ ENV PATH="/home/node/.npm-global/bin:${PATH}"
 # 여기서부터 node 권한으로 실행해도 /app에 쓸 수 있음
 USER node
 
+# =========================================================
+# ★ 공통 의존성 설치(루트 /app): express / mongoose / dotenv / body-parser
+#    - 루트에 package.json이 없으면 생성 + type=module 지정
+#    - /app/node_modules 에 설치 → 하위 폴더 어디서든 import 가능
+# =========================================================
+RUN set -eux; \
+    if [ ! -f /app/package.json ]; then \
+      npm init -y; \
+      npm pkg set type="module" --silent; \
+      npm pkg set name="node_chat_dev" --silent; \
+    fi; \
+    npm install express mongoose dotenv body-parser express-handlebars --no-audit --no-fund && \
+    npm install -D nodemon --no-audit --no-fund   # <<< 추가: dev 시 nodemon 사용
+
 # ---------------------------
 # Express 준비 (chapter3/express-server)
 # ---------------------------
-RUN mkdir -p /app/chapter3/express-server && \
-    cd /app/chapter3/express-server && \
-    [ -f package.json ] || npm init -y && \
-    npm pkg set name="express-server" --silent && \
-    npm pkg set type="module" --silent && \
-    npm install express@latest --no-audit --no-fund && \
-    [ -f server.js ] || printf "%s\n" \
-      "import express from 'express';" \
-      "const app = express();" \
-      "const PORT = process.env.PORT || 3000;" \
-      "app.get('/', (req, res) => res.send('Hello from Express!'));" \
-      "app.listen(PORT, () => console.log('[Express] listening on', PORT));" \
-      > server.js
+#RUN mkdir -p /app/chapter3/express-server && \
+#    cd /app/chapter3/express-server && \
+#    [ -f package.json ] || npm init -y && \
+#    npm pkg set name="express-server" --silent && \
+#    npm pkg set type="module" --silent && \
+#    npm install express@latest --no-audit --no-fund && \
+#    [ -f server.js ] || printf "%s\n" \
+#      "import express from 'express';" \
+#      "const app = express();" \
+#      "const PORT = process.env.PORT || 3000;" \
+ #     "app.get('/', (req, res) => res.send('Hello from Express!'));" \
+ #     "app.listen(PORT, () => console.log('[Express] listening on', PORT));" \
+ #     > server.js
 
 # ---------------------------
 # Nest.js 준비 (chapter8/hello-nestjs)
@@ -86,14 +100,14 @@ RUN mkdir -p /app/chapter8/hello-nestjs/src && \
       > tsconfig.json
 
 # ------------------------------------
-# Mongoose CRUD 준비 (chapter6/test-mongoose)
+# Mongoose CRUD 준비 (chapter7/board/app.js)
 #  - express/mongoose/dotenv/body-parser 사전 설치
 #  - 파일이 없으면 최소 package.json만 생성
 # ------------------------------------
-RUN mkdir -p /app/chapter6/test-mongoose && \
-    cd /app/chapter6/test-mongoose && \
-    [ -f package.json ] || (npm init -y && npm pkg set type="module" --silent && npm pkg set name="test-mongoose" --silent) && \
-    npm install express mongoose dotenv body-parser --no-audit --no-fund
+RUN mkdir -p /app/chapter7/board && \
+    cd /app/chapter7/board && \
+    [ -f package.json ] || (npm init -y && npm pkg set type="module" --silent && npm pkg set name="board" --silent) && \
+    npm install express mongoose dotenv body-parser express-handlebars --no-audit --no-fund
 
 
 # (선택) 나머지 소스 복사
@@ -103,8 +117,8 @@ COPY --chown=node:node . .
 # COPY 이후 실제 프로젝트 기준으로 종속성 동기화
 #  - lockfile이 있으면 npm ci, 없으면 npm install
 # ------------------------------------
-# chapter6/test-mongoose
-RUN cd /app/chapter6/test-mongoose && \
+# chapter7/board
+RUN cd /app/chapter7/board && \
     if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi
 
 # (필요하다면 chapter3/express-server, chapter8/hello-nestjs 도 동일 패턴으로 보강 가능)
@@ -115,4 +129,7 @@ RUN cd /app/chapter6/test-mongoose && \
 EXPOSE 3000 3001
 
 # 기본 실행: Express 서버
-CMD ["node", "chapter3/express-server/server.js"]
+#CMD ["node", "chapter3/express-server/server.js"]
+#CMD ["node", "chapter7/board/app.js"]
+# 개발용 nodemon로 핫리로드 실행
+CMD ["npx", "nodemon", "--legacy-watch", "chapter7/board/app.js"]
