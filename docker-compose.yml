@@ -54,7 +54,8 @@ services:
         condition: service_healthy
     # 루트가 아닌 node 유저로 실행
     user: "1000:1000"
-    command: ["npm", "run", "dev"]
+    #command: ["npm", "run", "dev"]
+    command: ["npx", "nodemon", "--legacy-watch", "chapter7/board/app.js"]
 
 volumes:
   mongo_data:

@@ -108,6 +108,7 @@ RUN mkdir -p /app/chapter7/board && \
     cd /app/chapter7/board && \
     [ -f package.json ] || (npm init -y && npm pkg set type="module" --silent && npm pkg set name="board" --silent) && \
     npm install express mongoose dotenv body-parser express-handlebars lodash --no-audit --no-fund
+RUN npm install -D nodemon --no-audit --no-fund
 
 
 # (선택) 나머지 소스 복사
@@ -132,4 +133,5 @@ EXPOSE 3000 3001
 #CMD ["node", "chapter3/express-server/server.js"]
 #CMD ["node", "chapter7/board/app.js"]
 # 개발용 nodemon로 핫리로드 실행
-CMD ["npx", "nodemon", "--legacy-watch", "chapter7/board/app.js"]
+#CMD ["npx", "nodemon", "--legacy-watch", "chapter7/board/app.js"]
+CMD ["nodemon", "--legacy-watch", "--inspect=0.0.0.0:9229", "chapter7/board/app.js"]
