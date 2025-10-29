@@ -31,7 +31,7 @@ RUN set -eux; \
       npm pkg set type="module" --silent; \
       npm pkg set name="node_chat_dev" --silent; \
     fi; \
-    npm install express mongoose dotenv body-parser express-handlebars --no-audit --no-fund && \
+    npm install express mongoose dotenv body-parser express-handlebars lodash --no-audit --no-fund && \
     npm install -D nodemon --no-audit --no-fund   # <<< 추가: dev 시 nodemon 사용
 
 # ---------------------------
@@ -107,7 +107,7 @@ RUN mkdir -p /app/chapter8/hello-nestjs/src && \
 RUN mkdir -p /app/chapter7/board && \
     cd /app/chapter7/board && \
     [ -f package.json ] || (npm init -y && npm pkg set type="module" --silent && npm pkg set name="board" --silent) && \
-    npm install express mongoose dotenv body-parser express-handlebars --no-audit --no-fund
+    npm install express mongoose dotenv body-parser express-handlebars lodash --no-audit --no-fund
 
 
 # (선택) 나머지 소스 복사

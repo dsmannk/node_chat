@@ -26,10 +26,22 @@ app.engine("handlebars", engine({
 app.set("view engine", "handlebars");               // 웹페이지 로드 시 사용할 템플릿 엔진 설정
 app.set("views", path.join(__dirname + "/views"));  // 뷰 디렉터리를 views로 설정
 
-app.get("/", (req, res) => {
+app.get("/", async (req, res) => {
     //res.render("home", { title: "안녕하세요", message: "만나서 반값습니다!" });
-    res.render("home", { title: "테스트 게시판"});
-})
+    const page = parseInt(req.query.page) || 1; // 현재 페이지 데이터
+    const search = req.query.search || ""; // 검색어 데이터
+    try {
+        // postService.list에서 글 목록과 페이지네이터를 가져옴
+        const [posts, paginator] = await postService.list(collection, page, search);
+
+        // 리스트 페이지 랜더링
+        res.render("home", { title: "테스트 게시판", search, paginator, posts});
+    } catch(error) {
+        console.log(error);
+        res.render("home", { title: "테스트 게시판 "});
+    }
+});
+
 
 // 쓰기 페이지 이동
 app.get("/write", (req, res) => {
