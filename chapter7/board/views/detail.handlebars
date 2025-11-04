@@ -5,13 +5,13 @@
     작성자 :<b>{{writer}}</b>
 </div>
 <div>
-    조회수 : 9999 | 작성일시 : 2025-10-28 00:00:00
+    조회수 : {{hits}} | 작성일시 : {{dateString createdDt}} <!-- 조회수 및 작성일 -->
     <button onclick="modifyPost()">수정</button>
     <button onclick="deletePost()">삭제</button>
 </div>
 
 <div>
-    <pre>본문입니다. 하이오히</pre>
+    <pre>{{content}}</pre>
 </div>
 
 <section>
@@ -53,3 +53,7 @@
         <a href="/">목록으로</a>
     </div>
 </footer>
+<script>
+async function modifyPost() {}
+async function deletePost() {}
+</script>

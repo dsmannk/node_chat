@@ -26,7 +26,8 @@ async function getDetailPost(collection, id) {
         ...projectionOption,
         returnDocument: 'after',  // v4+
         returnOriginal: false,    // v3
-        upsert: false
+        //upsert: false
+        includeResultMetadata: true,  // ← v6에서도 { value, ... }로 받기
     };
 
     const result = await collection.findOneAndUpdate(
@@ -38,20 +39,30 @@ async function getDetailPost(collection, id) {
     console.log('   [findOneAndUpdate] ok =', result?.ok,
         ' lastErrorObject =', result?.lastErrorObject);
 
-    if (!result || !result.value) {
-        // 3) 정말 매치가 없었는지 즉시 재확인
+    // if (!result || !result.value) {
+    //     // 3) 정말 매치가 없었는지 즉시 재확인
+    //     const exists = await collection.findOne({ _id });
+    //     console.log('   [recheck findOne]', exists ? { _id: exists._id, hits: exists.hits } : null);
+    //     return null;
+    // }
+    // v6 기본: result가 곧 문서, 과거형: result.value가 문서
+    const doc = result && result.value !== undefined ? result.value : result;
+
+    // console.log('✅ [DB 조회 성공] →', {
+    //     _id: result.value._id,
+    //     title: result.value.title,
+    //     writer: result.value.writer,
+    //     hits: result.value.hits
+    // });
+
+    if (!doc) {
+        // 확인 로그(선택)
         const exists = await collection.findOne({ _id });
         console.log('   [recheck findOne]', exists ? { _id: exists._id, hits: exists.hits } : null);
         return null;
     }
 
-    console.log('✅ [DB 조회 성공] →', {
-        _id: result.value._id,
-        title: result.value.title,
-        writer: result.value.writer,
-        hits: result.value.hits
-    });
-    return result.value;
+    return doc;
 }
 
 // 글쓰기
