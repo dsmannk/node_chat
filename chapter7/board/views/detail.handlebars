@@ -1,7 +1,8 @@
 <h1>{{title}}</h1>
-<h2 class="text-1">제목입니다.</h2>
+{{#with post}} <!-- post 객체를 쉽게 사용하도록 with로 감싸기 -->
+<h2 class="text-1">{{title}}</h2>
 <div>
-    작성자 :<b>작성자 이름</b>
+    작성자 :<b>{{writer}}</b>
 </div>
 <div>
     조회수 : 9999 | 작성일시 : 2025-10-28 00:00:00
@@ -46,7 +47,7 @@
         <pre>{{comment}}</pre>
     </div>
 </section>
-
+{{/with}}
 <footer>
     <div>
         <a href="/">목록으로</a>

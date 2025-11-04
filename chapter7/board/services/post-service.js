@@ -11,9 +11,47 @@ const projectionOption = {
 };
 
 async function getDetailPost(collection, id) {
-    // 몽고디비 Collection의 findOneAndUpdate() 함수를 사용
-    // 게시글을 읽을 때마다 hits를 1 증가
-    return await collection.findOneAndUpdate({ _id})
+    const hex = String(id).trim();
+    console.log('▶ [getDetailPost] 요청 ID(raw)=', id, ', 정규화=', hex);
+
+    if (!ObjectId.isValid(hex)) {
+        console.warn('❌ [getDetailPost] Invalid ObjectId:', hex);
+        return null;
+    }
+
+    const _id = new ObjectId(hex);
+
+    // 2) v3/v4+ 모두 커버하는 옵션 + 디버그 로그
+    const options = {
+        ...projectionOption,
+        returnDocument: 'after',  // v4+
+        returnOriginal: false,    // v3
+        upsert: false
+    };
+
+    const result = await collection.findOneAndUpdate(
+        { _id },
+        { $inc: { hits: 1 } },
+        options
+    );
+
+    console.log('   [findOneAndUpdate] ok =', result?.ok,
+        ' lastErrorObject =', result?.lastErrorObject);
+
+    if (!result || !result.value) {
+        // 3) 정말 매치가 없었는지 즉시 재확인
+        const exists = await collection.findOne({ _id });
+        console.log('   [recheck findOne]', exists ? { _id: exists._id, hits: exists.hits } : null);
+        return null;
+    }
+
+    console.log('✅ [DB 조회 성공] →', {
+        _id: result.value._id,
+        title: result.value.title,
+        writer: result.value.writer,
+        hits: result.value.hits
+    });
+    return result.value;
 }
 
 // 글쓰기
@@ -53,4 +91,5 @@ async function list(collection, page, search) {
 export default {
     list,
     writePost,
+    getDetailPost,
 }
