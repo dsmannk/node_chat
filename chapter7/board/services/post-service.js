@@ -11,15 +11,10 @@ const projectionOption = {
 };
 
 async function getDetailPost(collection, id) {
-    const hex = String(id).trim();
-    console.log('▶ [getDetailPost] 요청 ID(raw)=', id, ', 정규화=', hex);
-
-    if (!ObjectId.isValid(hex)) {
-        console.warn('❌ [getDetailPost] Invalid ObjectId:', hex);
+    const _id = getObjectId(id);
+    if (!_id) {
         return null;
     }
-
-    const _id = new ObjectId(hex);
 
     // 2) v3/v4+ 모두 커버하는 옵션 + 디버그 로그
     const options = {
@@ -99,8 +94,59 @@ async function list(collection, page, search) {
     return [posts, paginatorObj];
 }
 
+async function getPostByIdAndPassword(collection, { id, password }) {
+    const _id = getObjectId(id);
+    if (!_id) {
+        return null;
+    }
+
+    // findOne() 함수 사용
+    return await collection.findOne({ _id: _id, password: password }, projectionOption);
+}
+
+// id로 데이터 불러오기
+async function getPostById(collection, id) {
+    const _id = getObjectId(id);
+    if (!_id) {
+        return null;
+    }
+
+    return await collection.findOne({ _id: _id }, projectionOption);
+}
+
+// 게시글 수정
+async function updatePost(collection, id, post) {
+    const toUpdatePost = {
+        $set: {
+            ...post,
+        },
+    };
+
+    const _id = getObjectId(id);
+    if (!_id) {
+        return null;
+    }
+
+    return await collection.updateOne({ _id: _id }, toUpdatePost);
+}
+
+function getObjectId(id) {
+    const hex = String(id).trim();
+    console.log('▶ [getDetailPost] 요청 ID(raw)=', id, ', 정규화=', hex);
+
+    if (!ObjectId.isValid(hex)) {
+        console.warn('❌ [getDetailPost] Invalid ObjectId:', hex);
+        return null;
+    }
+
+    return new ObjectId(hex);
+}
+
 export default {
     list,
     writePost,
     getDetailPost,
+    getPostByIdAndPassword,
+    getPostById,
+    updatePost,
 }
