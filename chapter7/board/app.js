@@ -46,7 +46,34 @@ app.get("/", async (req, res) => {
 
 // 쓰기 페이지 이동
 app.get("/write", (req, res) => {
-   res.render("write", { title: "테스트 게시판" });
+   res.render("write", { title: "테스트 게시판", mode: "create" });
+});
+
+// 수정 페이지로 이동 mode는 modify
+app.get("/modify/:id", async (req, res) => {
+    // getPostById() 함수로 게시글 데이터를 받아옴
+    const post = await postService.getPostById(collection, req.params.id);
+    console.log('post = ', post);
+    res.render("write", { title: "테스트 게시판", mode: "modify", post });
+});
+
+// 게시글 수정
+app.post("/modify", async (req, res) => {
+
+    console.log('update!!!');
+
+    const { id, title, writer, password, content } = req.body;
+
+    const post = {
+        title,
+        writer,
+        password,
+        content,
+        createdDt: new Date().toISOString(),
+    };
+    // 업데이트 결과
+    const result = await postService.updatePost(collection, id, post);
+    res.redirect(`/detail/${id}`);
 });
 
 // 글쓰기
@@ -56,6 +83,38 @@ app.post("/write", async (req, res) => {
    const result = await postService.writePost(collection, post);
    // 생성된 도큐먼트의 _id를 사용해 상세페이지로 이동
     res.redirect(`/detail/${result.insertedId}`);
+});
+
+app.delete("/delete", async (req, res) => {
+    const { id, password } = req.body;
+    console.log('id =', id, ', password =', password);
+
+    // 0) 입력 검증
+    if (!id || !password) {
+        return res.status(400).json({ isSuccess: false, reason: 'MISSING_PARAMS' });
+    }
+    if (!ObjectId.isValid(id)) {
+        return res.status(400).json({ isSuccess: false, reason: 'INVALID_ID' });
+    }
+
+    try {
+        const _id = new ObjectId(id);
+        // collection의 deleteOne을 사용해 게시글 하나를 삭제
+        const result = await collection.deleteOne({ _id, password });
+
+        console.log('deleteOne result =', result);
+
+        // 삭제 결과가 잘못된 경우의 처리
+        if (result.deletedCount !== 1) {
+            console.log("삭제 실패");
+            return res.json({ isSuccess: false, reason: 'NOT_DELETED' });
+        }
+        return res.json({ isSuccess: true });
+    } catch (error) {
+        // 에러가 난 경우의 처리
+        console.error('[DELETE ERROR]', err);
+        return res.json({ isSuccess: false, reason: 'SERVER_ERROR' });
+    }
 });
 
 app.get("/detail/:id", async (req, res, next) => {
