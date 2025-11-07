@@ -1,5 +1,6 @@
 import paginator from '../utils/paginator.js';
 import { ObjectId } from 'mongodb';
+// import bcrypt from "bcrypt";
 
 // 패스워드는 노출 할 필요가 없으므로 결과값으로 가져오지 않음
 const projectionOption = {
@@ -130,6 +131,41 @@ async function updatePost(collection, id, post) {
     return await collection.updateOne({ _id: _id }, toUpdatePost);
 }
 
+// 댓글 원자적 추가
+async function appendComment(collection, id, { name, password, comment }) {
+    const _id = getObjectId(id);
+    if (!_id) {
+        return null;
+    }
+
+    //const hash = await bcrypt.hash(password, 10);
+
+    // 업데이트 파이프라인: 기존 comments 길이를 구해 idx 자동 부여
+    return await collection.updateOne(
+        { _id },
+        [
+            {
+                $set: {
+                    comments: {
+                        $concatArrays: [
+                            { $ifNull: ["$comments", []] },
+                            [
+                                {
+                                    idx: { $add: [{ $size: { $ifNull: ["$comments", []] } }, 1] },
+                                    name,
+                                    password,
+                                    comment,
+                                    createdDt: new Date().toISOString(),
+                                }
+                            ]
+                        ]
+                    }
+                }
+            }
+        ]
+    )
+}
+
 function getObjectId(id) {
     const hex = String(id).trim();
     console.log('▶ [getDetailPost] 요청 ID(raw)=', id, ', 정규화=', hex);
@@ -149,4 +185,5 @@ export default {
     getPostByIdAndPassword,
     getPostById,
     updatePost,
+    appendComment,
 }
