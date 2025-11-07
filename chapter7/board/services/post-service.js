@@ -141,21 +141,33 @@ async function appendComment(collection, id, { name, password, comment }) {
     //const hash = await bcrypt.hash(password, 10);
 
     // 업데이트 파이프라인: 기존 comments 길이를 구해 idx 자동 부여
+    // 장점
+    // 1. 동시에 두 사용자가 댓글을 작성해도, $push나 $concatArrays는 원자적이기 때문에 데이터 충돌이 적습니다.
+    // 2. 기존 문서를 불필요하게 다시 읽어서 덮어쓸 필요가 없습니다.
+    // 3. “가져오기 → 수정 → 저장” 대신 “업데이트 한 방”으로 끝냅니다.
+    // $push와의 차이
+    //  - $push는 업데이트 파이프라인 안에서는 $size, $ifNull 같은 Aggregation 표현식을 바로 쓸 수 없으며
+    //    $concatArrays 기반으로 직접 배열을 재구성하는 게 더 유연
     return await collection.updateOne(
         { _id },
         [
             {
                 $set: {
                     comments: {
-                        $concatArrays: [
-                            { $ifNull: ["$comments", []] },
+                        $concatArrays: [                        // 두 배열을 이어붙임 (concat)
+                            { $ifNull: ["$comments", []] },     // 기존 comments 배열이 null이면 빈 배열([])로 대체
                             [
-                                {
-                                    idx: { $add: [{ $size: { $ifNull: ["$comments", []] } }, 1] },
-                                    name,
-                                    password,
-                                    comment,
-                                    createdDt: new Date().toISOString(),
+                                {                               // 새로 추가할 댓글 객체 하나를 배열로 감싸서 append
+                                    idx: {
+                                        $add: [                 // 기존 comments 배열의 길이에 1을 더해 idx 부여
+                                            { $size: { $ifNull: ["$comments", []] } },
+                                            1
+                                        ]
+                                    },
+                                    name,                       // 요청에서 받은 name
+                                    password,                   // 요청에서 받은 password
+                                    comment,                    // 요청에서 받은 comment
+                                    createdDt: new Date().toISOString(), // 댓글 생성 시각
                                 }
                             ]
                         ]
